@@ -12,9 +12,19 @@ import (
 )
 
 func Apply(cfg *config.ProjectConfig) error {
+	// Top-level
 	for _, item := range cfg.Fetch {
 		if err := fetchOne(item); err != nil {
 			return fmt.Errorf("failed to fetch %s: %w", item.URL, err)
+		}
+	}
+
+	// Service-level
+	for _, svc := range cfg.Services {
+		for _, item := range svc.Fetch {
+			if err := fetchOne(item); err != nil {
+				return fmt.Errorf("failed to fetch %s: %w", item.URL, err)
+			}
 		}
 	}
 	return nil

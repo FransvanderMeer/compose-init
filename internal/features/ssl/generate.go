@@ -16,9 +16,19 @@ import (
 )
 
 func Apply(cfg *config.ProjectConfig) error {
+	// Top-level
 	for _, cert := range cfg.GenerateCert {
 		if err := generateOne(cert); err != nil {
 			return fmt.Errorf("failed to generate cert for %s: %w", cert.Domain, err)
+		}
+	}
+
+	// Service-level
+	for _, svc := range cfg.Services {
+		for _, cert := range svc.GenerateCert {
+			if err := generateOne(cert); err != nil {
+				return fmt.Errorf("failed to generate cert for %s: %w", cert.Domain, err)
+			}
 		}
 	}
 	return nil
