@@ -64,7 +64,10 @@ type CertConfig struct {
 }
 
 type FetchItem struct {
-	URL    string `yaml:"url"`
-	Dest   string `yaml:"dest"`
-	SHA256 string `yaml:"sha256"`
+	URL     string `yaml:"url"`
+	Dest    string `yaml:"dest"`
+	SHA256  string `yaml:"sha256"`
+	Force   bool   `yaml:"force"`
+	Retries int    `yaml:"retries"`
+	Extract bool   `yaml:"extract"`
 }
