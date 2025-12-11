@@ -54,9 +54,18 @@ func generateOne(c config.CertConfig) error {
 	certPath := filepath.Join(outDir, c.CertName)
 	keyPath := filepath.Join(outDir, c.KeyName)
 
-	if _, err := os.Stat(certPath); err == nil {
-		fmt.Printf("Certificate %s already exists, skipping.\n", certPath)
-		return nil
+	if !c.Force {
+		if _, err := os.Stat(certPath); err == nil {
+			// Check expiry
+			shouldRenew, reason := checkExpiry(certPath)
+			if !shouldRenew {
+				fmt.Printf("Certificate %s is valid (expires in %s), skipping.\n", certPath, reason)
+				return nil
+			}
+			fmt.Printf("Certificate %s needs renewal: %s\n", certPath, reason)
+		}
+	} else {
+		fmt.Printf("Forcing regeneration of %s\n", certPath)
 	}
 
 	fmt.Printf("Generating SSL cert for %s in %s\n", c.Domain, outDir)
