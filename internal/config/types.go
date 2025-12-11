@@ -60,6 +60,7 @@ type CertConfig struct {
 	OutputDir string `yaml:"output_dir"`
 	CertName  string `yaml:"cert_name"`
 	KeyName   string `yaml:"key_name"`
+	Force     bool   `yaml:"force"`
 }
 
 type FetchItem struct {
