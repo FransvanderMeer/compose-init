@@ -47,17 +47,33 @@ func applyOne(c config.ChownConfig, hostUID, hostGID int) error {
 		uid, gid = parsedUID, parsedGID
 	}
 
-	// Resolve Mode
-	var fileMode os.FileMode
-	if c.Mode != "" {
-		val, err := strconv.ParseUint(c.Mode, 8, 32)
-		if err != nil {
-			return fmt.Errorf("invalid mode format %s: %w", c.Mode, err)
+	// Resolve Modes
+	var defaultMode, fileMode, dirMode os.FileMode
+
+	parseMode := func(s string) (os.FileMode, error) {
+		if s == "" {
+			return 0, nil
 		}
-		fileMode = os.FileMode(val)
+		val, err := strconv.ParseUint(s, 8, 32)
+		if err != nil {
+			return 0, err
+		}
+		return os.FileMode(val), nil
 	}
 
-	fmt.Printf("Fixing %s to %d:%d (mode: %s, recursive: %v)\n", absPath, uid, gid, c.Mode, c.Recursive)
+	var errMode error
+	if defaultMode, errMode = parseMode(c.Mode); errMode != nil {
+		return fmt.Errorf("invalid mode %s: %w", c.Mode, errMode)
+	}
+	if fileMode, errMode = parseMode(c.FileMode); errMode != nil {
+		return fmt.Errorf("invalid file_mode %s: %w", c.FileMode, errMode)
+	}
+	if dirMode, errMode = parseMode(c.DirMode); errMode != nil {
+		return fmt.Errorf("invalid dir_mode %s: %w", c.DirMode, errMode)
+	}
+
+	fmt.Printf("Fixing %s to %d:%d (mode: %s, file: %s, dir: %s, rec: %v)\n",
+		absPath, uid, gid, c.Mode, c.FileMode, c.DirMode, c.Recursive)
 
 	// Action
 	ensureDir(absPath)
@@ -69,13 +85,21 @@ func applyOne(c config.ChownConfig, hostUID, hostGID int) error {
 		if err := os.Lchown(path, uid, gid); err != nil {
 			return fmt.Errorf("chown failed on %s: %w", path, err)
 		}
-		if c.Mode != "" {
-			// Only apply mode to directories if it looks like a directory mode (executable bit set?)
-			// Or just apply blindly? The user asked for it.
-			// Usually we want different modes for files vs dirs (e.g. 644 vs 755).
-			// If the user specifies 755, applying to files makes them executable.
-			// For now, let's apply blindly as requested, user beware.
-			if err := os.Chmod(path, fileMode); err != nil {
+
+		// Determine mode to apply
+		targetMode := defaultMode
+		if info.IsDir() {
+			if dirMode != 0 {
+				targetMode = dirMode
+			}
+		} else {
+			if fileMode != 0 {
+				targetMode = fileMode
+			}
+		}
+
+		if targetMode != 0 {
+			if err := os.Chmod(path, targetMode); err != nil {
 				return fmt.Errorf("chmod failed on %s: %w", path, err)
 			}
 		}

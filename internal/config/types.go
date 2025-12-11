@@ -44,9 +44,11 @@ type Volume struct {
 // Extension Types
 
 type ChownConfig struct {
-	Path      string `yaml:"path"`  // For service-level: target path. For volume-level: relative to volume root? Or just applied to volume?
-	Owner     string `yaml:"owner"` // "host" or "uid:gid"
-	Mode      string `yaml:"mode"`  // "0755"
+	Path      string `yaml:"path"`
+	Owner     string `yaml:"owner"`
+	Mode      string `yaml:"mode"`      // Default/Fallback
+	FileMode  string `yaml:"file_mode"` // Explicit for files
+	DirMode   string `yaml:"dir_mode"`  // Explicit for dirs
 	Recursive bool   `yaml:"recursive"`
 }
 
