@@ -19,7 +19,11 @@ type Service struct {
 	Environment map[string]string `yaml:"environment,omitempty"`
 
 	// Service-level extensions
-	Chown []ChownConfig `yaml:"x-chown,omitempty"`
+	Chown        []ChownConfig  `yaml:"x-chown,omitempty"`
+	Template     []TemplateItem `yaml:"x-template,omitempty"`
+	RequiredEnv  []string       `yaml:"x-required-env,omitempty"`
+	GenerateCert []CertConfig   `yaml:"x-generate-cert,omitempty"`
+	Fetch        []FetchItem    `yaml:"x-fetch,omitempty"`
 }
 
 // VolumeMount handles the complex volume syntax or simple string
