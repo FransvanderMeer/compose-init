@@ -44,7 +44,7 @@ Fix ownership and permissions of files and directories. Useful for bind mounts t
 - `mode`: Octal permission mode (fallback). E.g., `"0755"`.
 - `file_mode`: Specific mode for files. E.g., `"0644"`.
 - `dir_mode`: Specific mode for directories. E.g., `"0755"`.
-- `recursive`: Apply recursively (default `false`).
+- `recursive`: Apply recursively (default `false`). **Note**: Symlinks are ignored during permission changes (`chmod`), but ownership changes (`chown`) are applied to the symlink itself.
 
 **Example:**
 
@@ -146,19 +146,17 @@ x-required-env:
 ## Extensions Location
 
 All extensions can be defined:
-1.  **At the root** of `compose.yaml`: Applied globally.
-2.  **Inside a service**: Scoped to that service (useful for keeping config near the relevant container).
+1.  **Inside a service**: Scoped to that service. **Recommended** for robustness, especially when using Docker Compose includes or overrides, as top-level extensions can sometimes be stripped by `docker compose config`.
+2.  **At the root** of `compose.yaml`: Applied globally. Note that complex compose setups might require moving these to a specific service (like the `init` service itself) to ensure they are preserved.
 
 ```yaml
 services:
-  web:
-    image: nginx
-    x-generate-cert:
-      - domain: web.local
-        output_dir: ./certs
-
-x-required-env:
-  - GLOBAL_VAR
+  init:
+    image: ghcr.io/fransvandermeer/compose-init
+    x-chown:
+      - path: ./data
+        owner: host
+        recursive: true
 ```
 
 ## Building

@@ -1,0 +1,6 @@
+services:
+  foo:
+    image: busybox
+x-chown:
+  - path: ./test
+    owner: host

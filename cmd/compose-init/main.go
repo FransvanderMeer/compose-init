@@ -80,7 +80,7 @@ func run() {
 }
 
 func detectOwner(dir string) (int, int) {
-	candidates := []string{"compose.yaml", "docker-compose.yml", "docker-compose.yaml"}
+	candidates := []string{"compose.yml", "compose.yaml", "docker-compose.yml", "docker-compose.yaml"}
 	for _, f := range candidates {
 		path := filepath.Join(dir, f)
 		if _, err := os.Stat(path); err == nil {

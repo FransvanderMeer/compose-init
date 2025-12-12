@@ -98,7 +98,8 @@ func applyOne(c config.ChownConfig, hostUID, hostGID int) error {
 			}
 		}
 
-		if targetMode != 0 {
+		// Skip chmod for symlinks to avoid changing the target's permissions
+		if targetMode != 0 && info.Mode()&os.ModeSymlink == 0 {
 			if err := os.Chmod(path, targetMode); err != nil {
 				return fmt.Errorf("chmod failed on %s: %w", path, err)
 			}
